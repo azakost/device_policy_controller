@@ -110,6 +110,26 @@ class DevicePolicyControllerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
+            "setWhitelist" -> {
+                val packageName = call.argument<String>("package")
+                if (packageName != null && activity != null) {
+                    val isAdmin = mDevicePolicyManager.isAdminActive(adminComponentName)
+                    if (isAdmin) {
+                        val currentWhitelist = mDevicePolicyManager.getLockTaskPackages(adminComponentName)?.toMutableList() ?: mutableListOf()
+                        if (!currentWhitelist.contains(packageName)) {
+                            currentWhitelist.add(packageName)
+                            mDevicePolicyManager.setLockTaskPackages(adminComponentName, currentWhitelist.toTypedArray())
+                            result.success("Package $packageName added to whitelist.")
+                        } else {
+                            result.success("Package $packageName is already in the whitelist.")
+                        }
+                    } else {
+                        result.error("ADMIN_NOT_ACTIVE", "Device admin not active", null)
+                    }
+                } else {
+                    result.error("INVALID_ARGUMENT", "Package name is required", null)
+                }
+            }
             "setApplicationRestrictions" -> {
                 val packageName = call.argument<String>("packageName")
                 val restrictions = call.argument<Map<String, String>>("restrictions")

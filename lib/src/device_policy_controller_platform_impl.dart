@@ -4,12 +4,46 @@ import 'device_policy_controller.dart';
 import 'device_policy_controller_platform.dart';
 
 /// An implementation of [DevicePolicyControllerPlatform] that uses method channels.
-class DevicePolicyControllerPlatformImpl
-    extends DevicePolicyControllerPlatform {
-  DevicePolicyControllerPlatformImpl();
-
+class DevicePolicyControllerPlatformImpl extends DevicePolicyControllerPlatform {
   /// The method channel used to interact with the native platform.
   final _methodChannel = const MethodChannel('device_policy_controller');
+
+  DevicePolicyControllerPlatformImpl();
+
+  @override
+  Future<bool> addUserRestrictions(List<String> restrictions) async {
+    return await _methodChannel.invokeMethod('addUserRestrictions', restrictions);
+  }
+
+  @override
+  Future<void> clear() {
+    return _methodChannel.invokeMethod('clear');
+  }
+
+  @override
+  Future<void> clearDeviceOwnerApp({String? packageName}) {
+    return _methodChannel.invokeMethod('clearDeviceOwnerApp', {'packageName': packageName});
+  }
+
+  @override
+  Future<bool> clearUserRestriction(List<String> restrictions) async {
+    return await _methodChannel.invokeMethod('clearUserRestriction', restrictions);
+  }
+
+  @override
+  Future<String?> get(String contentKey, {String? defaultContent}) {
+    return _methodChannel.invokeMethod('get', {'contentKey': contentKey, 'default': defaultContent});
+  }
+
+  @override
+  Future<Map<String, String>?> getApplicationRestrictions(String packageName) {
+    return _methodChannel.invokeMapMethod<String, String>('getApplicationRestrictions', packageName);
+  }
+
+  @override
+  Future<Map<String, dynamic>?> getDeviceInfo() {
+    return _methodChannel.invokeMapMethod<String, dynamic>('getDeviceInfo');
+  }
 
   @override
   void handleBootCompleted(handler) {
@@ -18,29 +52,6 @@ class DevicePolicyControllerPlatformImpl
         handler(DevicePolicyController.instance);
       }
     });
-  }
-
-  @override
-  Future<bool> addUserRestrictions(List<String> restrictions) async {
-    return await _methodChannel.invokeMethod(
-        'addUserRestrictions', restrictions);
-  }
-
-  @override
-  Future<bool> clearUserRestriction(List<String> restrictions) async {
-    return await _methodChannel.invokeMethod(
-        'clearUserRestriction', restrictions);
-  }
-
-  @override
-  Future<Map<String, String>?> getApplicationRestrictions(String packageName) {
-    return _methodChannel.invokeMapMethod<String, String>(
-        'getApplicationRestrictions', packageName);
-  }
-
-  @override
-  Future<Map<String, dynamic>?> getDeviceInfo() {
-    return _methodChannel.invokeMapMethod<String, dynamic>('getDeviceInfo');
   }
 
   @override
@@ -59,28 +70,33 @@ class DevicePolicyControllerPlatformImpl
   }
 
   @override
+  Future<bool> isScreenAwake() async {
+    return await _methodChannel.invokeMethod('isScreenAwake');
+  }
+
+  @override
   Future<bool> lockApp({bool home = true}) async {
     return await _methodChannel.invokeMethod('lockApp', {'home': home});
   }
 
   @override
   Future<bool> lockDevice({String? password}) async {
-    return await _methodChannel
-        .invokeMethod('lockDevice', {'password': password});
+    return await _methodChannel.invokeMethod('lockDevice', {'password': password});
+  }
+
+  @override
+  Future<void> put(String contentKey, {String? content}) {
+    return _methodChannel.invokeMethod('put', {'contentKey': contentKey, 'content': content});
   }
 
   @override
   Future<bool> rebootDevice({String? reason}) async {
-    return await _methodChannel
-        .invokeMethod('rebootDevice', {'reason': reason});
+    return await _methodChannel.invokeMethod('rebootDevice', {'reason': reason});
   }
 
   @override
-  Future<bool> wipeData({int flags = 0, String? reason}) async {
-    return await _methodChannel.invokeMethod('wipeData', {
-      'flags': flags,
-      'reason': reason,
-    });
+  Future<void> remove(String contentKey) {
+    return _methodChannel.invokeMethod('remove', {'contentKey': contentKey});
   }
 
   @override
@@ -89,8 +105,7 @@ class DevicePolicyControllerPlatformImpl
   }
 
   @override
-  Future<void> setApplicationRestrictions(
-      String packageName, Map<String, String> restrictions) {
+  Future<void> setApplicationRestrictions(String packageName, Map<String, String> restrictions) {
     return _methodChannel.invokeMethod('setApplicationRestrictions', {
       'packageName': packageName,
       'restrictions': restrictions,
@@ -98,14 +113,38 @@ class DevicePolicyControllerPlatformImpl
   }
 
   @override
-  Future<void> setKeepScreenAwake(bool enable) {
-    return _methodChannel
-        .invokeMethod('setKeepScreenAwake', {'enable': enable});
+  Future<bool> setAsLauncher({bool enable = true}) async {
+    return await _methodChannel.invokeMethod('setAsLauncher', {'enable': enable});
   }
 
   @override
-  Future<bool> isScreenAwake() async {
-    return await _methodChannel.invokeMethod('isScreenAwake');
+  Future<void> setCameraDisabled({required bool disabled}) {
+    return _methodChannel.invokeMethod('setCameraDisabled', {'disabled': disabled});
+  }
+
+  @override
+  Future<void> setKeepScreenAwake(bool enable) {
+    return _methodChannel.invokeMethod('setKeepScreenAwake', {'enable': enable});
+  }
+
+  @override
+  Future<void> setKeyguardDisabled({required bool disabled}) {
+    return _methodChannel.invokeMethod('setKeyguardDisabled', {'disabled': disabled});
+  }
+
+  @override
+  Future<void> setScreenCaptureDisabled({required bool disabled}) {
+    return _methodChannel.invokeMethod('setScreenCaptureDisabled', {'disabled': disabled});
+  }
+
+  @override
+  Future<void> setWhiteList(String package) {
+    return _methodChannel.invokeMethod('setWhitelist', {'package': package});
+  }
+
+  @override
+  Future<bool> startApp({String? packageName}) async {
+    return await _methodChannel.invokeMethod('startApp', {'packageName': packageName});
   }
 
   @override
@@ -114,60 +153,10 @@ class DevicePolicyControllerPlatformImpl
   }
 
   @override
-  Future<void> clearDeviceOwnerApp({String? packageName}) {
-    return _methodChannel
-        .invokeMethod('clearDeviceOwnerApp', {'packageName': packageName});
-  }
-
-  @override
-  Future<void> setCameraDisabled({required bool disabled}) {
-    return _methodChannel
-        .invokeMethod('setCameraDisabled', {'disabled': disabled});
-  }
-
-  @override
-  Future<void> setKeyguardDisabled({required bool disabled}) {
-    return _methodChannel
-        .invokeMethod('setKeyguardDisabled', {'disabled': disabled});
-  }
-
-  @override
-  Future<void> setScreenCaptureDisabled({required bool disabled}) {
-    return _methodChannel
-        .invokeMethod('setScreenCaptureDisabled', {'disabled': disabled});
-  }
-
-  @override
-  Future<bool> startApp({String? packageName}) async {
-    return await _methodChannel
-        .invokeMethod('startApp', {'packageName': packageName});
-  }
-
-  @override
-  Future<bool> setAsLauncher({bool enable = true}) async {
-    return await _methodChannel
-        .invokeMethod('setAsLauncher', {'enable': enable});
-  }
-
-  @override
-  Future<void> clear() {
-    return _methodChannel.invokeMethod('clear');
-  }
-
-  @override
-  Future<String?> get(String contentKey, {String? defaultContent}) {
-    return _methodChannel.invokeMethod(
-        'get', {'contentKey': contentKey, 'default': defaultContent});
-  }
-
-  @override
-  Future<void> put(String contentKey, {String? content}) {
-    return _methodChannel
-        .invokeMethod('put', {'contentKey': contentKey, 'content': content});
-  }
-
-  @override
-  Future<void> remove(String contentKey) {
-    return _methodChannel.invokeMethod('remove', {'contentKey': contentKey});
+  Future<bool> wipeData({int flags = 0, String? reason}) async {
+    return await _methodChannel.invokeMethod('wipeData', {
+      'flags': flags,
+      'reason': reason,
+    });
   }
 }
